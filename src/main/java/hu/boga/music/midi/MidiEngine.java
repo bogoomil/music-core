@@ -149,7 +149,7 @@ public class MidiEngine {
         AtomicInteger count = new AtomicInteger(0);
         tracks.stream().sorted(Comparator.comparing(Track::getFirstEmptyMeasureTick)).forEach(t -> {
             try {
-                javax.sound.midi.Track track = MidiEngine.getInstrumentTrack(seq, t.getSettings().getMidiChannel(), t.getSettings().getProgram());
+                javax.sound.midi.Track track = MidiEngine.getInstrumentTrack(seq, t.getSettings().midiChannel, t.getSettings().program);
                 playTrack(t, track);
                 if (count.intValue() == 0) {
                     setMidiMetaMessages(t, track);
@@ -202,7 +202,7 @@ public class MidiEngine {
     private static void playTrack(Track t, javax.sound.midi.Track track) {
         t.getTrackMap().forEach((tick, notes) -> {
             try {
-                MidiEngine.addNotesToTrack(track, t.getSettings().getMidiChannel(), notes, tick, t.getSettings().getVolume());
+                MidiEngine.addNotesToTrack(track, t.getSettings().midiChannel, notes, tick, t.getSettings().volume);
 
             } catch (InvalidMidiDataException e) {
                 e.printStackTrace();

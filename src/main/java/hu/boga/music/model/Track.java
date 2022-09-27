@@ -15,25 +15,12 @@ import hu.boga.music.midi.MidiEngine;
 
 public class Track implements Cloneable {
 
-    private int tempo = 120;
-
     private Map<Integer, List<Note>> trackMap = new HashMap<>();
 
     private TrackSettings settings = TrackSettings.defaultSettings();
 
     public Map<Integer, List<Note>> getTrackMap() {
         return trackMap;
-    }
-
-    private void addNote(int tick, Note n) {
-        List<Note> notes = trackMap.get(tick);
-        if (notes == null) {
-            notes = new ArrayList<>();
-            trackMap.put(tick, notes);
-        }
-        if (!notes.contains(n)) {
-            notes.add(n);
-        }
     }
 
     public List<Note> getNotesAtTick(int tick) {
@@ -66,35 +53,12 @@ public class Track implements Cloneable {
         return retVal;
     }
 
-    private List<Note> getCopyOfSelectedNotes(List<Note> notes) {
-        return notes.stream().filter(Note::isSelected).map(Note::new).collect(Collectors.toList());
-    }
-
-    public void addNotes(List<Note> notes) {
-//        notes.forEach(n -> this.addNote(settings.getPointer(), n));
-//        int pointer = settings.getPointer() + settings.getGapLength().getErtek();
-//        settings.setPointer(pointer);
-
-    }
-
-    private int getFirstTickInMap(Map<Integer, List<Note>> ntp) {
-        return ntp.entrySet().stream().map(e -> e.getKey()).sorted().findFirst().orElse(0);
-    }
-
     public void paste(Map<Integer, List<Note>> ntp) {
         ntp.forEach((t, list) -> {
             list.forEach(note -> {
                 this.addNote(t + 2, note);
             });
         });
-    }
-
-    public int getTempo() {
-        return tempo;
-    }
-
-    public void setTempo(int tempo) {
-        this.tempo = tempo;
     }
 
     public TrackSettings getSettings() {
@@ -117,35 +81,20 @@ public class Track implements Cloneable {
         return t;
     }
 
-    private Map<Integer, List<Note>> cloneNotes() {
-        Map<Integer, List<Note>> ret = new HashMap<>();
-        this.trackMap.entrySet().forEach(entry -> {
-            List<Note> l = entry.getValue().stream().map(Note::new).collect(Collectors.toList());
-            ret.put(entry.getKey(), l);
-        });
-        return ret;
-    }
-
     @JsonIgnore
     public Integer getFirstEmptyTick() {
-        int max = 0;
-        for (Integer tick : trackMap.keySet()) {
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        trackMap.forEach((tick, list) -> {
             Optional<Note> longest = getLongestNoteAtTick(tick);
             if (longest.isPresent()) {
                 int t = tick + longest.get().getLength().getErtek();
-                if (t > max) {
-                    max = t;
+                if (t >= atomicInteger.get()) {
+                    atomicInteger.set(t);
                 }
             }
-        }
-        return max;
-    }
 
-    private Optional<Note> getLongestNoteAtTick(int tick) {
-        if (this.getNotesAtTick(tick) != null) {
-            return this.getNotesAtTick(tick).stream().max((n1, n2) -> n2.length.compareTo(n1.length));
-        }
-        return Optional.empty();
+        });
+        return atomicInteger.get();
     }
 
     public void selectAll() {
@@ -182,21 +131,44 @@ public class Track implements Cloneable {
         return measureNum * 32;
     }
 
-//    public void generatePattern(Note note) {
-//        int count = MidiEngine.TICKS_IN_MEASURE / settings.getGapLength().getErtek();
-//        int tick = settings.getPointer();
-//        for (int i = 0; i < count; i++) {
-//            this.addNote(tick, new Note(note));
-//            tick += settings.getGapLength().getErtek();
-//            settings.setPointer(tick);
-//        }
+//    public int getNotesTick(Note note) {
+//        AtomicInteger atomicInteger = new AtomicInteger();
+//        this.trackMap.forEach((tick, list) -> {
+//            if (list.contains(note)) atomicInteger.set(tick);
+//        });
+//        return atomicInteger.get();
 //    }
 
-    public int getNotesTick(Note note) {
-        AtomicInteger atomicInteger = new AtomicInteger();
-        this.trackMap.forEach((tick, list) -> {
-            if (list.contains(note)) atomicInteger.set(tick);
-        });
-        return atomicInteger.get();
+    private void addNote(int tick, Note n) {
+        List<Note> notes = trackMap.get(tick);
+        if (notes == null) {
+            notes = new ArrayList<>();
+            trackMap.put(tick, notes);
+        }
+        if (!notes.contains(n)) {
+            notes.add(n);
+        }
     }
+
+    private Map<Integer, List<Note>> cloneNotes() {
+        Map<Integer, List<Note>> ret = new HashMap<>();
+        this.trackMap.entrySet().forEach(entry -> {
+            List<Note> l = entry.getValue().stream().map(Note::new).collect(Collectors.toList());
+            ret.put(entry.getKey(), l);
+        });
+        return ret;
+    }
+
+    private List<Note> getCopyOfSelectedNotes(List<Note> notes) {
+        return notes.stream().filter(Note::isSelected).map(Note::new).collect(Collectors.toList());
+    }
+
+    private Optional<Note> getLongestNoteAtTick(int tick) {
+        if (this.getNotesAtTick(tick) != null) {
+            return this.getNotesAtTick(tick).stream().max((n1, n2) -> n2.length.compareTo(n1.length));
+        }
+        return Optional.empty();
+    }
+
+
 }

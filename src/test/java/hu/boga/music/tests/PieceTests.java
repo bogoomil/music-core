@@ -53,7 +53,7 @@ class PieceTests {
         p.addTrack(t);
         Note n = new Note();
         n.setLength(NoteLength.HARMICKETTED);
-        t.addNotes(Arrays.asList(n));
+        t.getNotesAtTick(0).add(n);
 
         assertEquals(1, p.getMaxTick());
 

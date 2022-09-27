@@ -93,4 +93,13 @@ class NoteTests {
         n.decrementLength();
         assertEquals(NoteLength.NEGYSZERES, n.getLength());
     }
+
+    @Test
+    void equalsTest(){
+        Note n1 = new Note();
+        Note n2 = new Note();
+        n2.setId(0);
+
+        assertEquals(n2, n1);
+    }
 }
