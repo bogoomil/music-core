@@ -130,11 +130,11 @@ class TrackTests {
 
         TrackSettings ts = new TrackSettings();
         ts.setProgram(23);
-        ts.setLength(NoteLength.HARMICKETTED);
-        ts.setOctave(3);
-        ts.setScaleRoot(NoteName.Ab);
-        ts.setScaleTone(Tone.LOCRIAN);
-        ts.setGapLength(NoteLength.HARMICKETTED);
+//        ts.setLength(NoteLength.HARMICKETTED);
+//        ts.setOctave(3);
+//        ts.setScaleRoot(NoteName.Ab);
+//        ts.setScaleTone(Tone.LOCRIAN);
+//        ts.setGapLength(NoteLength.HARMICKETTED);
         t.setSettings(ts);
 
         Note n = new Note();
@@ -147,11 +147,11 @@ class TrackTests {
 
         assertEquals(t.getNotesAtTick(0).get(0).getLength(), cloned.getNotesAtTick(0).get(0).getLength());
         assertEquals(t.getNotesAtTick(0).get(0).getMidiCode(), cloned.getNotesAtTick(0).get(0).getMidiCode());
-        assertEquals(NoteLength.HARMICKETTED, cloned.getSettings().getLength());
-        assertEquals(3, cloned.getSettings().getOctave());
+//        assertEquals(NoteLength.HARMICKETTED, cloned.getSettings().getLength());
+//        assertEquals(3, cloned.getSettings().getOctave());
         assertEquals(23, cloned.getSettings().getProgram());
-        assertEquals(NoteName.Ab, cloned.getSettings().getScaleRoot());
-        assertEquals(Tone.LOCRIAN, cloned.getSettings().getScaleTone());
+//        assertEquals(NoteName.Ab, cloned.getSettings().getScaleRoot());
+//        assertEquals(Tone.LOCRIAN, cloned.getSettings().getScaleTone());
     }
 
     @Test
