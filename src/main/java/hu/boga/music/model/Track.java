@@ -11,13 +11,18 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.google.common.base.Objects;
 import hu.boga.music.midi.MidiEngine;
 
 public class Track implements Cloneable {
+    private int counter;
+    private int id = counter++;
+    private String name;
 
     private Map<Integer, List<Note>> trackMap = new HashMap<>();
-
     private TrackSettings settings = TrackSettings.defaultSettings();
+
+    static Map<Integer, List<Note>> copiedNotes;
 
     public Map<Integer, List<Note>> getTrackMap() {
         return trackMap;
@@ -42,21 +47,21 @@ public class Track implements Cloneable {
         this.addNote(tick, n);
     }
 
-    public Map<Integer, List<Note>> copy() {
-        Map<Integer, List<Note>> retVal = new HashMap<>();
+    public void copy() {
+        Map<Integer, List<Note>> map = new HashMap<>();
         for (Entry<Integer, List<Note>> entry : trackMap.entrySet()) {
             List<Note> sn = this.getCopyOfSelectedNotes(entry.getValue());
             if (!sn.isEmpty()) {
-                retVal.put(entry.getKey(), sn);
+                map.put(entry.getKey(), sn);
             }
         }
-        return retVal;
+        this.copiedNotes = map;
     }
 
-    public void paste(Map<Integer, List<Note>> ntp) {
-        ntp.forEach((t, list) -> {
+    public void paste() {
+        copiedNotes.forEach((t, list) -> {
             list.forEach(note -> {
-                this.addNote(t + 2, note);
+                this.addNote(t + 32, note);
             });
         });
     }
@@ -131,6 +136,7 @@ public class Track implements Cloneable {
         return measureNum * 32;
     }
 
+
 //    public int getNotesTick(Note note) {
 //        AtomicInteger atomicInteger = new AtomicInteger();
 //        this.trackMap.forEach((tick, list) -> {
@@ -168,6 +174,31 @@ public class Track implements Cloneable {
             return this.getNotesAtTick(tick).stream().max((n1, n2) -> n2.length.compareTo(n1.length));
         }
         return Optional.empty();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Track track = (Track) o;
+        return id == track.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 
