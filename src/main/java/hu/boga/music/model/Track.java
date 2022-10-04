@@ -1,23 +1,16 @@
 package hu.boga.music.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.google.common.base.Objects;
-import hu.boga.music.midi.MidiEngine;
 
 public class Track implements Cloneable {
-    private int counter;
-    private int id = counter++;
-    private String name;
+    private UUID id = UUID.randomUUID();
 
     private Map<Integer, List<Note>> trackMap = new HashMap<>();
     private TrackSettings settings = TrackSettings.defaultSettings();
@@ -124,7 +117,12 @@ public class Track implements Cloneable {
 
     }
 
-    public void shiftSelected(int octavesToShift) {
+    public void shiftPitch(int pitchToShift){
+        this.trackMap.forEach((tick, notes) -> notes.stream().filter(Note::isSelected).forEach(n -> n.setPitch(n.getPitch().shift(pitchToShift))));
+
+    }
+
+    public void shiftOctave(int octavesToShift) {
         this.trackMap.forEach((tick, notes) -> notes.stream().filter(Note::isSelected).forEach(n -> n.setPitch(n.getPitch().shift(octavesToShift))));
 
     }
@@ -176,7 +174,7 @@ public class Track implements Cloneable {
         return Optional.empty();
     }
 
-    public int getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -185,20 +183,12 @@ public class Track implements Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Track track = (Track) o;
-        return id == track.id;
+        return id.equals(track.id);
     }
 
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
 

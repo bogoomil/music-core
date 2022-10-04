@@ -1,18 +1,9 @@
 package hu.boga.music.model;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import hu.boga.music.enums.NoteLength;
-import hu.boga.music.enums.NoteName;
-import hu.boga.music.enums.Tone;
-import hu.boga.music.model.Note;
-import hu.boga.music.model.Track;
-import hu.boga.music.model.TrackSettings;
 import hu.boga.music.theory.Pitch;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -103,7 +94,7 @@ class TrackTests {
     @Test
     void shiftSelectedTest(){
         track.selectAll();
-        track.shiftSelected(1);
+        track.shiftOctave(1);
         assertTrue(track.getTrackMap().get(0).get(0).getPitch().getMidiCode() == 24);
     }
 

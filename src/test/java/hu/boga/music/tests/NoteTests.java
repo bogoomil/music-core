@@ -12,12 +12,14 @@ import hu.boga.music.enums.NoteLength;
 import hu.boga.music.model.Note;
 import hu.boga.music.theory.Pitch;
 
+import java.util.UUID;
+
 class NoteTests {
 
     // Static mezőket explicit initializálni kell!!!
     @BeforeEach
     void initCounter() {
-        Note.setCounter(0);
+
     }
 
     @Test
@@ -96,9 +98,11 @@ class NoteTests {
 
     @Test
     void equalsTest(){
+        UUID uuid = UUID.randomUUID();
         Note n1 = new Note();
+        n1.setId(uuid);
         Note n2 = new Note();
-        n2.setId(0);
+        n2.setId(uuid);
 
         assertEquals(n2, n1);
     }

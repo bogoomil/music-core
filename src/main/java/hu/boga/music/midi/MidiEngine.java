@@ -28,7 +28,6 @@ import hu.boga.music.model.Track;
  * default.sf2 néven
  *
  * @author kunb
- *
  */
 
 public class MidiEngine {
@@ -106,10 +105,10 @@ public class MidiEngine {
 
     public static double getTickLengthInMillis(int tempo) {
         double msInNegyed = 60000d / tempo; // 120-as tempo esetén 500 ms egy
-                                            // negyed
+        // negyed
         // // hang hossza
         double measureLengthInMs = msInNegyed * 4; // ütem hossza 120-as
-                                                   // temponál
+        // temponál
 
         double tickLengthInMs = measureLengthInMs / MidiEngine.TICKS_IN_MEASURE;
         // // 2000 ms
@@ -127,33 +126,48 @@ public class MidiEngine {
     }
 
     public static void playTracks(List<Track> tracks, int tempo, int loopCount) throws InvalidMidiDataException, MidiUnavailableException, IOException {
+        Sequencer sequencer = getSequencer(loopCount);
         Sequence seq = new Sequence(Sequence.PPQ, MidiEngine.RESOLUTION);
-        Sequencer sequencer = MidiEngine.getSequencer();
+        prepareMidiTracks(tracks, seq, true);
+        sequencer.setSequence(seq);
+        sequencer.setTickPosition(0);
+        sequencer.start();
+        sequencer.setTempoInBPM(tempo);
+    }
 
+    private static Sequencer getSequencer(int loopCount) throws MidiUnavailableException {
+        Sequencer sequencer = MidiEngine.getSequencer();
         sequencer.setTempoFactor(tempoFactor);
         sequencer.setLoopCount(loopCount);
         if (!sequencer.isOpen()) {
             sequencer.open();
         }
-        prepareMidiTracks(tracks, seq);
-
-        sequencer.setSequence(seq);
-        sequencer.setTickPosition(0);
-        sequencer.start();
-        sequencer.setTempoInBPM(tempo);
-        File file = new File("piece.mid");
-        MidiSystem.write(seq, 1, file);
+        return sequencer;
     }
 
-    private static void prepareMidiTracks(List<Track> tracks, Sequence seq) {
+    public static void exportMidi(List<Track> tracks, int tempo, String fileName) throws MidiUnavailableException, InvalidMidiDataException, IOException {
+        Sequencer sequencer = getSequencer(1);
+        Sequence seq = new Sequence(Sequence.PPQ, MidiEngine.RESOLUTION);
+        prepareMidiTracks(tracks, seq, false);
+        sequencer.setSequence(seq);
+        sequencer.setTickPosition(0);
+        sequencer.setTempoInBPM(tempo);
+        File file = new File(fileName);
+        MidiSystem.write(seq, 1, file);
+
+    }
+
+    private static void prepareMidiTracks(List<Track> tracks, Sequence seq, boolean withMetamessages) {
         AtomicInteger count = new AtomicInteger(0);
         tracks.stream().sorted(Comparator.comparing(Track::getFirstEmptyMeasureTick)).forEach(t -> {
             try {
                 javax.sound.midi.Track track = MidiEngine.getInstrumentTrack(seq, t.getSettings().midiChannel, t.getSettings().program);
                 playTrack(t, track);
-                if (count.intValue() == 0) {
-                    setMidiMetaMessages(t, track);
-                    count.incrementAndGet();
+                if (withMetamessages) {
+                    if (count.intValue() == 0) {
+                        setMidiMetaMessages(t, track);
+                        count.incrementAndGet();
+                    }
                 }
 
             } catch (InvalidMidiDataException e) {
@@ -202,7 +216,7 @@ public class MidiEngine {
     private static void playTrack(Track t, javax.sound.midi.Track track) {
         t.getTrackMap().forEach((tick, notes) -> {
             try {
-                MidiEngine.addNotesToTrack(track, t.getSettings().midiChannel, notes, tick, t.getSettings().volume);
+                MidiEngine.addNotesToTrack(track, t.getSettings().midiChannel, notes, tick);
 
             } catch (InvalidMidiDataException e) {
                 e.printStackTrace();
@@ -210,29 +224,28 @@ public class MidiEngine {
         });
     }
 
-    private static void addNotesToTrack(javax.sound.midi.Track track, int channel, List<Note> notes, int tick, int vol) throws InvalidMidiDataException {
+    private static void addNotesToTrack(javax.sound.midi.Track track, int channel, List<Note> notes, int tick) throws InvalidMidiDataException {
         for (Note n : notes) {
-            addNoteToTrack(track, channel, n, tick, vol);
+            addNoteToTrack(track, channel, n, tick);
         }
-
     }
 
-    private static void addNoteToTrack(javax.sound.midi.Track track, int channel, Note note, int tick, int vol) throws InvalidMidiDataException {
+    private static void addNoteToTrack(javax.sound.midi.Track track, int channel, Note note, int tick) throws InvalidMidiDataException {
 
         int startInTick = tick;
         int endInTick = startInTick + note.getLength().getErtek();
 
         ShortMessage a = new ShortMessage();
-        a.setMessage(ShortMessage.NOTE_ON, channel, note.getPitch().getMidiCode(), vol);
+        a.setMessage(ShortMessage.NOTE_ON, channel, note.getPitch().getMidiCode(), note.getVelocity());
         MidiEvent noteOn = new MidiEvent(a, startInTick);
         track.add(noteOn);
 
-        track.add(new MidiEvent(
-                new ShortMessage(ShortMessage.CONTROL_CHANGE, channel, 7, vol),
-                startInTick));
+//        track.add(new MidiEvent(
+//                new ShortMessage(ShortMessage.CONTROL_CHANGE, channel, 7, vol),
+//                startInTick));
 
         ShortMessage b = new ShortMessage();
-        b.setMessage(ShortMessage.NOTE_OFF, channel, note.getPitch().getMidiCode(), 0);
+        b.setMessage(ShortMessage.NOTE_OFF, channel, note.getPitch().getMidiCode(), note.getVelocity());
         MidiEvent noteOff = new MidiEvent(b, endInTick);
         track.add(noteOff);
 

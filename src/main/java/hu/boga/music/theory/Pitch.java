@@ -42,7 +42,11 @@ public class Pitch {
     }
 
     public Pitch shift(int shift) {
-        return new Pitch(this.midiCode + (shift * 12));
+        return new Pitch(this.midiCode += shift);
+    }
+
+    public Pitch shiftOctave(int octave){
+        return new Pitch(this.midiCode + (octave * 12));
     }
 
     @Override

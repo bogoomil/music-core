@@ -1,5 +1,7 @@
 package hu.boga.music.enums;
 
+import java.util.Optional;
+
 public enum NoteLength {
     // EGESZ(1), HAROMNEGYED(3), FEL(2), NEGYED(4), NYOLCAD(8), TIZENHATOD(16),
     // HARMICKETTED(MidiEngine.TICKS_IN_MEASURE);
@@ -15,13 +17,13 @@ public enum NoteLength {
         return this.ertek;
     }
 
-    public static NoteLength ofErtek(int ertek) {
+    public static Optional<NoteLength> ofErtek(int ertek) {
         for (NoteLength nl : NoteLength.values()) {
             if (nl.getErtek() == ertek) {
-                return nl;
+                return Optional.of(nl);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public NoteLength next() {

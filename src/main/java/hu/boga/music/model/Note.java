@@ -2,27 +2,27 @@ package hu.boga.music.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.google.common.base.Objects;
 import hu.boga.music.enums.NoteLength;
 import hu.boga.music.theory.Pitch;
+
+import java.util.UUID;
 
 public class Note implements Cloneable {
 
     Pitch pitch;
     NoteLength length;
+    int velocity;
 
     boolean selected;
 
-    private static int counter;
+    private UUID id = UUID.randomUUID();
 
-    private int id;
+    public Note(){
 
-    public Note() {
-        this.id = counter;
-        counter++;
     }
 
     public Note(Note noteToCopy) {
-        this();
         this.length = noteToCopy.getLength();
         this.pitch = noteToCopy.getPitch();
         this.selected = noteToCopy.isSelected();
@@ -49,43 +49,26 @@ public class Note implements Cloneable {
         return this.pitch.getMidiCode();
     }
 
-//    @Override
-//    public int hashCode() {
-//        final int prime = 31;
-//        int result = 1;
-//        result = prime * result + id;
-//        return result;
-//    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Note note = (Note) o;
+        return Objects.equal(id, note.id);
+    }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        Note other = (Note) obj;
-        if (id != other.id) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 
     @JsonIgnore
-    public int getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(UUID id) {
         this.id = id;
-    }
-
-    public static void setCounter(int counter) {
-        Note.counter = counter;
     }
 
     @JsonIgnore
@@ -111,4 +94,11 @@ public class Note implements Cloneable {
 
     }
 
+    public int getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(int velocity) {
+        this.velocity = velocity;
+    }
 }
